@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Content Forge</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" href="icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#2d5a3d">
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:#faf8f4; color:#1a1a1a; padding: calc(16px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom)); }
+.hq { max-width: 640px; margin: 0 auto; }
+header { display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:6px; }
+h1 { font-size:21px; letter-spacing:.5px; }
+.chapter { font-size:12.5px; color:#7a6a4f; font-weight:600; }
+.muted { color:#8a8172; font-size:12px; }
+.statbar { display:flex; gap:10px; margin:14px 0; }
+.stat { background:#fff; border:1px solid #e8e0d2; border-radius:12px; padding:10px 6px; flex:1; text-align:center; }
+.stat .num { font-size:22px; font-weight:800; color:#2d5a3d; }
+.stat .lbl { font-size:10px; text-transform:uppercase; letter-spacing:.8px; color:#8a8172; margin-top:2px; }
+.xpwrap { background:#fff; border:1px solid #e8e0d2; border-radius:12px; padding:14px 16px; margin-bottom:18px; }
+.xprow { display:flex; justify-content:space-between; font-size:12.5px; font-weight:600; margin-bottom:6px; gap:8px; }
+.levelname { color:#2d5a3d; }
+.xpbar { height:13px; background:#efe9dd; border-radius:7px; overflow:hidden; }
+.xpfill { height:100%; background:linear-gradient(90deg,#4a8c5f,#7dc98f); border-radius:7px; transition:width .8s cubic-bezier(.22,1,.36,1); }
+h2 { font-size:13px; text-transform:uppercase; letter-spacing:1.5px; color:#7a6a4f; margin:22px 0 10px; }
+.deck { display:grid; grid-template-columns:1fr; gap:12px; }
+@media(min-width:520px){ .deck { grid-template-columns:1fr 1fr; } }
+.card { background:#fff; border:1px solid #e8e0d2; border-radius:14px; padding:16px; display:flex; flex-direction:column; }
+.card.wild { border-color:#d4a017; background:linear-gradient(180deg,#fffdf5,#fff); }
+.card.done { opacity:.55; }
+.cat { font-size:10px; text-transform:uppercase; letter-spacing:1px; font-weight:700; color:#b5560a; margin-bottom:6px; }
+.card.wild .cat { color:#d4a017; }
+.title { font-size:15px; font-weight:800; margin-bottom:6px; }
+.desc { font-size:12.5px; color:#5c5647; line-height:1.45; flex:1; }
+.cardfoot { display:flex; justify-content:space-between; align-items:center; margin-top:12px; }
+.xp { font-size:13px; font-weight:800; color:#2d5a3d; }
+button.claim { background:#2d5a3d; color:#fff; border:none; border-radius:8px; padding:9px 16px; font-size:13px; font-weight:700; cursor:pointer; }
+button.claim:disabled { background:#c9c2b2; }
+.rowlist .card { flex-direction:row; align-items:center; gap:10px; padding:12px 14px; margin-bottom:8px; }
+.rowlist .desc { display:none; }
+.rowlist .title { margin:0; font-size:13px; flex:1; }
+.rowlist .cardfoot { margin:0; gap:10px; }
+.log { background:#fff; border:1px solid #e8e0d2; border-radius:12px; padding:12px 16px; }
+.log div { font-size:12.5px; padding:5px 0; border-bottom:1px dashed #eee5d5; }
+.log div:last-child { border-bottom:none; }
+.log .lxp { color:#2d5a3d; font-weight:700; }
+.toolbar { display:flex; gap:10px; align-items:center; margin:10px 0 4px; }
+button.reroll { background:#fff; border:1px solid #d8cfbc; border-radius:8px; padding:6px 12px; font-size:12px; color:#5c5647; }
+button.reroll:disabled { opacity:.45; }
+.creed { margin-top:22px; font-size:12px; color:#8a8172; font-style:italic; text-align:center; line-height:1.6; }
+.toast { position:fixed; bottom:calc(24px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); background:#2d5a3d; color:#fff; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; opacity:0; transition:opacity .3s; z-index:100; max-width:90vw; text-align:center; }
+.toast.show { opacity:1; }
+#confetti { position:fixed; inset:0; pointer-events:none; z-index:99; }
+.loading { text-align:center; color:#8a8172; padding:40px 0; }
+.lesson { background:linear-gradient(180deg,#f4f9ff,#fff); border:1px solid #c9ddf0; border-radius:14px; padding:18px; }
+.lesson .src { display:inline-block; font-size:10px; text-transform:uppercase; letter-spacing:1px; font-weight:800; padding:3px 10px; border-radius:999px; margin-bottom:8px; }
+.src.adley { background:#fdeef0; color:#b3324a; }
+.src.ava { background:#eef4fd; color:#2a5db0; }
+.src.akana { background:#f3eefd; color:#6b3ab0; }
+.lesson .principle { font-size:15.5px; font-weight:800; margin-bottom:8px; }
+.lesson .body { font-size:13px; line-height:1.55; color:#414a56; margin-bottom:12px; }
+.drillbox { background:#fff; border:1px dashed #b9cfe6; border-radius:10px; padding:12px; font-size:12.5px; line-height:1.5; color:#33404f; margin-bottom:12px; }
+.drillbox b { color:#2a5db0; }
+.lessonfoot { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.lpath { font-size:11px; color:#8a8172; margin-left:auto; }
+button.lbtn { background:#2a5db0; color:#fff; border:none; border-radius:8px; padding:9px 16px; font-size:13px; font-weight:700; }
+button.lbtn:disabled { background:#c9c2b2; }
+.lessondone { text-align:center; padding:8px; font-size:13px; color:#2a5db0; font-weight:600; }
+.auth { max-width:360px; margin:8vh auto 0; background:#fff; border:1px solid #e8e0d2; border-radius:16px; padding:26px; text-align:center; }
+.auth img { width:72px; height:72px; border-radius:18px; margin-bottom:12px; }
+.auth h1 { margin-bottom:4px; }
+.auth p { font-size:12.5px; color:#8a8172; margin-bottom:18px; }
+.auth input { width:100%; padding:12px; border:1px solid #d8cfbc; border-radius:10px; font-size:14px; margin-bottom:10px; background:#fff; }
+.auth button.main { width:100%; background:#2d5a3d; color:#fff; border:none; border-radius:10px; padding:13px; font-size:14px; font-weight:700; margin-bottom:8px; }
+.auth button.alt { width:100%; background:#fff; color:#2d5a3d; border:1px solid #cfe6d6; border-radius:10px; padding:12px; font-size:13px; font-weight:600; }
+.auth .err { color:#b3324a; font-size:12px; margin-top:8px; min-height:15px; }
+.signout { background:none; border:none; color:#8a8172; font-size:11px; text-decoration:underline; }
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<div class="hq" id="root"><div class="loading">Lighting the forge…</div></div>
+<div class="toast" id="toast"></div>
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+const sb = createClient('https://wblggsaklyvuobzaznqf.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndibGdnc2FrbHl2dW9iemF6bnFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2MzY4NTMsImV4cCI6MjA4ODIxMjg1M30.XSFPMJMmNzbZjw6xp8IuS-GUXH-U96aOpPqcCwpb6Bg');
+const LEVELS = [ {name:'Wanderer',at:0},{name:'Pathfinder',at:500},{name:'Trailblazer',at:1500},{name:'Wayfinder',at:3000},{name:'Cartographer of Human Potential',at:5000} ];
+let templates=[], log=[], lessons=[], sprint=null, uid=null;
+const root = document.getElementById('root');
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2400); }
+function escH(s){ return String(s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function burst(){ const c=document.getElementById('confetti'),x=c.getContext('2d'); c.width=innerWidth;c.height=innerHeight; const cols=['#4a8c5f','#d4a017','#b5560a','#7dc98f','#2a5db0']; const P=[]; for(let i=0;i<110;i++){ P.push({a:innerWidth/2,b:innerHeight/2,vx:(Math.random()-.5)*13,vy:(Math.random()-.9)*13,g:.35,s:4+Math.random()*5,r:Math.random()*3,col:cols[Math.floor(Math.random()*cols.length)],life:60+Math.random()*30}); } let f=0; (function tick(){ x.clearRect(0,0,c.width,c.height); f++; let alive=false; P.forEach(function(p){ if(f>p.life)return; alive=true; p.a+=p.vx; p.b+=p.vy; p.vy+=p.g; p.r+=.1; x.save(); x.translate(p.a,p.b); x.rotate(p.r); x.fillStyle=p.col; x.fillRect(-p.s/2,-p.s/2,p.s,p.s); x.restore(); }); if(alive)requestAnimationFrame(tick); else x.clearRect(0,0,c.width,c.height); })(); }
+function dayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function daySeed(){ return parseInt(dayKey().replace(/-/g,'')) + (parseInt(localStorage.getItem('reroll_'+dayKey())||'0')*7919); }
+function shuffle(arr,seed){ const a=arr.slice(); let s=seed; function rnd(){ s|=0; s=s+0x6D2B79F5|0; let t=Math.imul(s^s>>>15,1|s); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; } for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); const tmp=a[i]; a[i]=a[j]; a[j]=tmp; } return a; }
+function todaysDeck(){ const d=shuffle(templates.filter(function(t){return t.deck==='daily';}),daySeed()).slice(0,3); const w=shuffle(templates.filter(function(t){return t.deck==='wildcard';}),daySeed()+13); if((daySeed()%10)<4 && w.length) d.push(w[0]); return d; }
+function doneToday(tid){ return log.some(function(l){ return l.quest_template_id===tid && l.completed_at.slice(0,10)===dayKey(); }); }
+function titleLogged(title,todayOnly){ return log.some(function(l){ return l.title===title && (!todayOnly || l.completed_at.slice(0,10)===dayKey()); }); }
+function streakInfo(){ const days=new Set(log.map(function(l){return l.completed_at.slice(0,10);})); let streak=0, shields=2; const d=new Date(); if(!days.has(dayKey())) d.setDate(d.getDate()-1); for(let i=0;i<365;i++){ const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); if(days.has(k)) streak++; else if(shields>0 && streak>0) shields--; else break; d.setDate(d.getDate()-1); } return {streak:streak,shields:shields}; }
+function levelFor(xp){ let cur=LEVELS[0], next=null; for(const l of LEVELS){ if(xp>=l.at) cur=l; else { next=l; break; } } return {cur:cur,next:next}; }
+async function addLog(tid,title,xp){ const row={user_id:uid,title:title,xp:xp}; if(tid) row.quest_template_id=tid; const r=await sb.from('quest_log').insert(row); if(r.error) throw r.error; log.unshift({quest_template_id:tid||null,title:title,xp:xp,completed_at:new Date().toISOString()}); }
+async function completeQuest(t,btn){ btn.disabled=true; btn.textContent='…'; try{ await addLog(t.id,t.title,t.xp); burst(); toast('+'+t.xp+' XP — '+t.title); render(); }catch(e){ btn.disabled=false; btn.textContent='Claim '+t.xp+' XP'; toast('Save failed — try again'); } }
+function card(t){ const done=doneToday(t.id); const el=document.createElement('div'); el.className='card'+(t.deck==='wildcard'?' wild':'')+(done?' done':''); el.innerHTML='<div><div class="cat">'+escH(t.deck==='wildcard'?'🃏 wildcard':t.category)+'</div><div class="title">'+escH(t.title)+'</div></div><div class="desc">'+escH(t.description)+'</div><div class="cardfoot"><span class="xp">'+t.xp+' XP</span></div>'; const btn=document.createElement('button'); btn.className='claim'; btn.textContent=done?'Done today':'Claim '+t.xp+' XP'; btn.disabled=done; btn.onclick=function(){ completeQuest(t,btn); }; el.querySelector('.cardfoot').appendChild(btn); return el; }
+function currentLesson(){ const ordered=lessons.slice().sort(function(a,b){return a.sort_order-b.sort_order;}); for(const L of ordered){ if(!titleLogged('Lesson: '+L.title)) return {L:L,stage:'learn'}; if(!titleLogged('Drill: '+L.title)) return {L:L,stage:'drill'}; } return null; }
+function lessonCard(){ const wrap=document.createElement('div'); wrap.className='lesson'; const cur=currentLesson(); const total=lessons.length; const learned=lessons.filter(function(L){ return titleLogged('Lesson: '+L.title)&&titleLogged('Drill: '+L.title); }).length; if(!cur){ wrap.innerHTML='<div class="lessondone">🎓 All '+total+' lessons mastered. New doctrine drops with the next intel cycle.</div>'; return wrap; } const doneFullToday=lessons.some(function(L){ return titleLogged('Lesson: '+L.title,true)&&titleLogged('Drill: '+L.title,true); }); const L=cur.L, stage=cur.stage; const srcName=L.source==='adley'?'Adley Kinsman · Viralish':(L.source==='ava'?'Ava Yuergens · PB Launch':'Anna Akana · Sketch Doctrine'); wrap.innerHTML='<span class="src '+L.source+'">'+srcName+'</span><div class="principle">'+escH(L.title)+': '+escH(L.principle)+'</div><div class="body">'+escH(L.explainer)+'</div><div class="drillbox"><b>⚡ 2-Minute Drill:</b> '+escH(L.drill)+'</div><div class="lessonfoot"><span class="lpath">Lesson '+(learned+1)+' of '+total+'</span></div>'; const foot=wrap.querySelector('.lessonfoot'); const btn=document.createElement('button'); btn.className='lbtn'; if(doneFullToday && stage==='learn'){ btn.textContent='Next lesson unlocks tomorrow'; btn.disabled=true; } else if(stage==='learn'){ btn.textContent='I learned it (+'+L.learn_xp+' XP)'; btn.onclick=async function(){ btn.disabled=true; try{ await addLog(null,'Lesson: '+L.title,L.learn_xp); burst(); toast('+'+L.learn_xp+' XP — doctrine absorbed'); render(); }catch(e){ btn.disabled=false; toast('Save failed'); } }; } else { btn.textContent='Drill complete (+'+L.drill_xp+' XP)'; btn.onclick=async function(){ btn.disabled=true; try{ await addLog(null,'Drill: '+L.title,L.drill_xp); burst(); toast('+'+L.drill_xp+' XP — applied knowledge'); render(); }catch(e){ btn.disabled=false; toast('Save failed'); } }; } foot.prepend(btn); return wrap; }
+function render(){ const xp=log.reduce(function(s,l){return s+(l.xp||0);},0); const lv=levelFor(xp); const st=streakInfo(); const todayXp=log.filter(function(l){return l.completed_at.slice(0,10)===dayKey();}).reduce(function(s,l){return s+l.xp;},0); const pct=lv.next?Math.min(100,Math.round((xp-lv.cur.at)/(lv.next.at-lv.cur.at)*100)):100; const goal=sprint?sprint.xp_goal:3000; const chPct=Math.min(100,Math.round(xp/goal*100));
+root.innerHTML='<header><h1>⚔️ Content Forge</h1><div class="chapter">'+(sprint?('Chapter '+sprint.chapter_number+' — '+escH(sprint.title)):'')+'</div></header>'+'<div class="muted">Points for behaviors, never for numbers.</div>'+'<div class="statbar"><div class="stat"><div class="num">'+xp.toLocaleString()+'</div><div class="lbl">Total XP</div></div><div class="stat"><div class="num">'+st.streak+'🔥</div><div class="lbl">Streak · '+st.shields+'🛡</div></div><div class="stat"><div class="num">+'+todayXp+'</div><div class="lbl">Today</div></div></div>'+'<div class="xpwrap"><div class="xprow"><span class="levelname">⭐ '+escH(lv.cur.name)+'</span><span>'+(lv.next?(lv.next.at-xp)+' XP to '+escH(lv.next.name):'Max level')+'</span></div><div class="xpbar"><div class="xpfill" style="width:'+pct+'%"></div></div><div class="xprow" style="margin-top:10px"><span>'+(sprint?escH(sprint.target_description):'Chapter progress')+'</span><span>'+chPct+'%</span></div><div class="xpbar"><div class="xpfill" style="width:'+chPct+'%; background:linear-gradient(90deg,#b5560a,#e0913f)"></div></div></div>'+'<h2>📖 Today&#39;s Doctrine</h2><div id="lessonslot"></div>'+'<div class="toolbar"><h2 style="margin:0">Today&#39;s Quest Deck</h2><button class="reroll" id="reroll"'+(localStorage.getItem('reroll_'+dayKey())?' disabled':'')+'>🎲 Reroll</button></div><div class="deck" id="deck"></div>'+'<h2>Side Quests</h2><div class="rowlist" id="side"></div>'+'<h2>Recent Victories</h2><div class="log" id="loglist"></div>'+'<div class="creed">“A posted flop is paid reconnaissance. An unposted masterpiece is worth 0 XP.”</div>'+'<div style="text-align:center;margin-top:14px"><button class="signout" id="signout">sign out</button></div>';
+document.getElementById('lessonslot').appendChild(lessonCard());
+const deck=document.getElementById('deck'); todaysDeck().forEach(function(t){ deck.appendChild(card(t)); });
+const side=document.getElementById('side'); templates.filter(function(t){return t.deck==='side';}).forEach(function(t){ side.appendChild(card(t)); });
+const ll=document.getElementById('loglist'); ll.innerHTML = log.slice(0,8).map(function(l){ return '<div>'+escH(l.title)+' <span class="lxp">+'+l.xp+'</span> <span class="muted">· '+new Date(l.completed_at).toLocaleDateString(undefined,{month:'short',day:'numeric'})+'</span></div>'; }).join('') || '<div class="muted">First quest awaits. Momentum is the whole game.</div>';
+document.getElementById('reroll').onclick=function(){ localStorage.setItem('reroll_'+dayKey(),'1'); render(); };
+document.getElementById('signout').onclick=async function(){ await sb.auth.signOut(); location.reload(); };
+}
+async function loadApp(session){ uid=session.user.id; root.innerHTML='<div class="loading">Opening the war room…</div>'; try{ const r1=await sb.from('quest_templates').select('id,title,description,category,xp,deck').eq('active',true); const r2=await sb.from('quest_log').select('quest_template_id,title,xp,completed_at').order('completed_at',{ascending:false}).limit(500); const r3=await sb.from('lessons').select('id,source,title,principle,explainer,drill,learn_xp,drill_xp,sort_order').eq('active',true).order('sort_order'); const r4=await sb.from('sprints').select('chapter_number,title,target_description,xp_goal').eq('status','active').limit(1); if(r1.error||r2.error||r3.error||r4.error) throw (r1.error||r2.error||r3.error||r4.error); templates=r1.data||[]; log=r2.data||[]; lessons=r3.data||[]; sprint=(r4.data||[])[0]||null; render(); }catch(e){ root.innerHTML='<div class="loading">Could not load. Pull to refresh.</div>'; } }
+function renderAuth(){ root.innerHTML='<div class="auth"><img src="icon.svg" alt=""><h1>Content Forge</h1><p>Gamified content production.<br>Points for behaviors, never for numbers.</p><input id="email" type="email" placeholder="email" autocomplete="email"><input id="pw" type="password" placeholder="password" autocomplete="current-password"><button class="main" id="signin">Sign in</button><button class="alt" id="magic">Email me a magic link</button><div class="err" id="err"></div></div>';
+const err=document.getElementById('err');
+document.getElementById('signin').onclick=async function(){ err.textContent=''; const r=await sb.auth.signInWithPassword({email:document.getElementById('email').value.trim(),password:document.getElementById('pw').value}); if(r.error) err.textContent=r.error.message; };
+document.getElementById('magic').onclick=async function(){ err.textContent=''; const em=document.getElementById('email').value.trim(); if(!em){ err.textContent='Enter your email first'; return; } const r=await sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:location.href}}); err.textContent=r.error?r.error.message:'Link sent — check your email.'; };
+}
+sb.auth.onAuthStateChange(function(event,session){ if(session) loadApp(session); else renderAuth(); });
+</script>
+</body>
+</html>
